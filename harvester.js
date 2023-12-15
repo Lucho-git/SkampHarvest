@@ -5,7 +5,7 @@ export class Harvester {
         this.images = images; // Object containing images for each direction
         this.currentImage = images.up; // Default image
         this.currentDirection = 'up'; // Initial facing direction
-
+        this.lastDestination = null;
         this.destination = null; // Destination coordinates
         this.moveDelay = 10; // Number of frames to wait before each move
         this.moveCounter = 0; // Counter to track movement delay
@@ -14,6 +14,7 @@ export class Harvester {
     }
 
     setDestination(x, y) {
+        this.lastDestination = this.destination;
         this.destination = { x, y };
     }
 
@@ -24,6 +25,9 @@ export class Harvester {
             return;
         }
         this.moveCounter = 0; // Reset the counter after moving
+
+        //redraw surrounding areas
+        this.markSurroundingPlotsForRedraw(paddock);
 
 
         const dx = this.destination.x - this.x;
@@ -42,6 +46,7 @@ export class Harvester {
             console.log("Harvester storage full or plot not farmable!");
             // Optional: Stop the harvester or take other actions
         }
+
         
         // Update image based on direction
         if (dx > 0) this.currentImage = this.images.right;
@@ -56,6 +61,18 @@ export class Harvester {
         // Check if reached destination
         if (this.x === this.destination.x && this.y === this.destination.y) {
             this.destination = null;
+        }
+    }
+
+    markSurroundingPlotsForRedraw(paddock) {
+        for (let dy = -1; dy <= 1; dy++) {
+            for (let dx = -1; dx <= 1; dx++) {
+                let plotX = this.x + dx;
+                let plotY = this.y + dy;
+                if (plotX >= 0 && plotX < paddock.paddockLength && plotY >= 0 && plotY < paddock.paddockWidth) {
+                    paddock.plots[plotY][plotX].needsRedraw = true;
+                }
+            }
         }
     }
 

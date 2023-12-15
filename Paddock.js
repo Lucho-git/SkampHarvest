@@ -1,11 +1,12 @@
 export class Plot {
-    constructor(coordinates, yieldEfficiency, zone, farmed = false) {
+    constructor(coordinates, yieldEfficiency, zone, farmed = false, needsRedraw = true) {
         this.coordinates = coordinates;
         this.size = 12 * 12 / 10000; // Area in hectares
         this.yieldEfficiency = yieldEfficiency;
         this.yieldValue = this.size * this.yieldEfficiency;
         this.zone = zone;
         this.farmed = farmed;
+        this.needsRedraw = needsRedraw;
     }
 }
 
@@ -27,7 +28,7 @@ export class Paddock {
             for (let x = 0; x < this.paddockLength; x++) {
                 let zone = this.determineZone(x, y);
                 let yieldEfficiency = this.zoneYieldEfficiency[zone];
-                row.push(new Plot({x, y}, yieldEfficiency, zone));
+                row.push(new Plot({x, y}, yieldEfficiency, zone, false, true));
             }
             farmland.push(row);
         }
@@ -60,8 +61,10 @@ export class Paddock {
         let plot = this.plots[y][x];
         if (plot.zone !== 0 && !plot.farmed) {
             plot.farmed = true;
+            plot.needsRedraw = true;
             return plot.yieldValue;
         }
+        plot.needsRedraw = true;
         return 0;
     }
     

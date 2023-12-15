@@ -9,20 +9,42 @@ function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, col
     ctx.textBaseline = 'middle';
     ctx.fillStyle = 'black';  // Color for text
 
-    if(harvester.destination)(
-        console.log('yes')
-    )
 
     for (let y = 0; y < paddock.paddockWidth; y++) {
         for (let x = 0; x < paddock.paddockLength; x++) {
             let plot = paddock.plots[y][x];
     
             // Draw the base cell color
-            ctx.fillStyle = colors[plot.zone];
-            ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+
+            if (plot.needsRedraw) {
+                // Redraw logic for the cell
+                console.log('redrawing', plot.coordinates);
+                ctx.fillStyle = colors[plot.zone];
+                ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+
+                // Reset the flag
+                plot.needsRedraw = false;
+            }
+
+
     
             // Highlight the destination cell in red
             if (harvester.destination && harvester.destination.x === x && harvester.destination.y === y) {
+                if (harvester.lastDestination) {
+                    // Check if lastDestination indices are within the bounds of paddock.plots
+                    if (harvester.lastDestination.x >= 0 && harvester.lastDestination.x < paddock.paddockLength &&
+                        harvester.lastDestination.y >= 0 && harvester.lastDestination.y < paddock.paddockWidth) {
+                        
+                        let redraw = paddock.plots[harvester.lastDestination.y][harvester.lastDestination.x];
+                        redraw.needsRedraw = true;
+                        console.log(redraw);
+                    }
+                    harvester.lastDestination = null; // Reset lastDestination after processing
+                }
+
+
+                ctx.fillStyle = colors[plot.zone];
+                ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
                 ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';  // Use semi-transparent red
                 ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
             }
@@ -95,13 +117,32 @@ function startApplication() {
         harvester.setDestination(cellX, cellY);
     });
 
+    canvas.addEventListener('', (event) => {
+
+
+    });
+
+    function handleKeyPress(event) {
+        console.log(event.code + 'Shift pressed!');
+        if (event.key === 'r' || event.key ==='R') {
+            for (let i = 0; i < paddock.paddockWidth; i++) {
+                for (let z = 0; z < paddock.paddockLength; z++) {
+                    let plot = paddock.plots[i][z];
+                    plot.needsRedraw = true;
+                    console.log(plot.needsRedraw)
+                }
+            }
+        }
+    }
+
     function gameLoop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        //ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, colors, harvester);
         harvester.move(paddock);
         harvester.draw(ctx, cellWidth, cellHeight);
         requestAnimationFrame(gameLoop);
     }
+    window.addEventListener('keydown', handleKeyPress);
 
     gameLoop();
 
