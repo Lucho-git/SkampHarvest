@@ -7,7 +7,7 @@ export class Harvester {
         this.currentDirection = 'up'; // Initial facing direction
         this.lastDestination = null;
         this.destination = null; // Destination coordinates
-        this.moveDelay = 10; // Number of frames to wait before each move
+        this.moveDelay = 3; // Number of frames to wait before each move
         this.moveCounter = 0; // Counter to track movement delay
         this.storageCapacity = 10; // Total storage capacity
         this.currentLoad = 0; // Current amount of yield in storage

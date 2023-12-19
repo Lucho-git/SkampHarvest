@@ -3,6 +3,15 @@ import { loadImages, images } from './imageLoader.js';
 import { Harvester } from './harvester.js';
 
 
+function drawGridlines(ctx, paddock, cellWidth, cellHeight) {
+    for (let y = 0; y < paddock.paddockWidth; y++) {
+        for (let x = 0; x < paddock.paddockLength; x++) {
+            ctx.strokeStyle = 'black';
+            ctx.strokeRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+        }
+    }
+}
+
 function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, colors, harvester) {
     ctx.font = '20px Arial';
     ctx.textAlign = 'left';
@@ -19,8 +28,17 @@ function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, col
             if (plot.needsRedraw) {
                 // Redraw logic for the cell
                 console.log('redrawing', plot.coordinates);
+                ctx.fillStyle = 'black'
                 ctx.fillStyle = colors[plot.zone];
                 ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+
+                // Check if the plot is farmable and not yet farmed, then draw the wheat image
+                if (plot.zone !== 0 && !plot.farmed) {
+                    ctx.drawImage(images.wheat, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                }
+                if (plot.zone !== 0 && plot.farmed) {
+                    ctx.drawImage(images.dirt, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                }
 
                 // Reset the flag
                 plot.needsRedraw = false;
@@ -43,25 +61,13 @@ function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, col
                 }
 
 
-                ctx.fillStyle = colors[plot.zone];
-                ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
-                ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';  // Use semi-transparent red
+                // ctx.fillStyle = colors[plot.zone];
+                //ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.05)';  // Use semi-transparent red
                 ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
             }
 
-            // Check if the plot is farmable and not yet farmed, then draw the wheat image
-            if (plot.zone !== 0 && !plot.farmed) {
-                ctx.drawImage(images.wheat, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
-            }
-            if (plot.zone !== 0 && plot.farmed) {
-                ctx.drawImage(images.dirt, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
-            }
-    
 
-    
-            // Draw grid lines
-            ctx.strokeStyle = 'black';
-            ctx.strokeRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
         }
 
         // Calculate and display the yield for the row
@@ -87,7 +93,9 @@ function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, col
 
 function startApplication() {
     console.log('Starting')
+    const gridCanvas = document.getElementById('gridCanvas');
     const canvas = document.getElementById('paddockCanvas');
+    const gridCtx = gridCanvas.getContext('2d');
     const ctx = canvas.getContext('2d');
 
     // Create a Paddock instance
@@ -98,17 +106,20 @@ function startApplication() {
     const gridWidth = paddock.paddockLength * cellWidth;
     const canvasExtraWidth = 350;
 
-    // Adjust canvas width
+    // Adjust canvas width and gridCanvas width
     canvas.width = gridWidth + canvasExtraWidth;
     canvas.height = paddock.paddockWidth * cellHeight;
+    gridCanvas.width = gridWidth + canvasExtraWidth;
+    gridCanvas.height = paddock.paddockWidth * cellHeight;
+
 
     // Colors for different zones
     const colors = {
-        0: '#b0c4de',
-        1: '#ffe4b5',
-        2: '#98fb98',
-        3: '#ffdeff',
-        'farmed': '#32cd32'
+        0: 'rgba(176, 196, 222, 1)',
+        1: 'rgba(255, 228, 181, 1)',
+        2: 'rgba(152, 251, 152, 1)',
+        3: 'rgba(255, 222, 255, 1)',
+        'farmed': 'rgba(50, 205, 50, 1)'
     };
 
     const harvesterImages = {
@@ -150,12 +161,14 @@ function startApplication() {
 
     function gameLoop() {
         //ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw the initial gridlines
         drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, colors, harvester);
         harvester.move(paddock);
         harvester.draw(ctx, cellWidth, cellHeight);
         requestAnimationFrame(gameLoop);
     }
     window.addEventListener('keydown', handleKeyPress);
+    drawGridlines(gridCtx, paddock, cellWidth, cellHeight);
 
     gameLoop();
 
