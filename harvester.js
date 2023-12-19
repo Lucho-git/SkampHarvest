@@ -1,5 +1,5 @@
 export class Harvester {
-    constructor(x, y, images) {
+    constructor(x, y, images, paddock) {
         this.x = x;
         this.y = y;
         this.images = images; // Object containing images for each direction
@@ -11,11 +11,16 @@ export class Harvester {
         this.moveCounter = 0; // Counter to track movement delay
         this.storageCapacity = 10; // Total storage capacity
         this.currentLoad = 0; // Current amount of yield in storage
+        this.paddock = paddock;
     }
 
     setDestination(x, y) {
         this.lastDestination = this.destination;
         this.destination = { x, y };
+        console.log(this.paddock)
+        if (this.paddock && this.paddock.plots[y][x]) {
+            this.paddock.plots[y][x].needsHighlight = true;
+        }
     }
 
 

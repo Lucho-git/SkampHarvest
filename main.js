@@ -44,9 +44,6 @@ function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, col
                 plot.needsRedraw = false;
             }
 
-
-    
-            // Highlight the destination cell in red
             if (harvester.destination && harvester.destination.x === x && harvester.destination.y === y) {
                 if (harvester.lastDestination) {
                     // Check if lastDestination indices are within the bounds of paddock.plots
@@ -60,14 +57,12 @@ function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, col
                     harvester.lastDestination = null; // Reset lastDestination after processing
                 }
 
-
-                // ctx.fillStyle = colors[plot.zone];
-                //ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
-                ctx.fillStyle = 'rgba(255, 0, 0, 0.05)';  // Use semi-transparent red
-                ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                if (plot.needsHighlight){
+                    ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';  // Use semi-transparent red
+                    ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                    plot.needsHighlight = false; // Reset the flag after drawing
+                }
             }
-
-
         }
 
         // Calculate and display the yield for the row
@@ -99,7 +94,7 @@ function startApplication() {
     const ctx = canvas.getContext('2d');
 
     // Create a Paddock instance
-    let paddock = new Paddock(40, 20, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
+    let paddock = new Paddock(84, 120, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
     
     const cellWidth = 80;
     const cellHeight = 80;
@@ -128,7 +123,7 @@ function startApplication() {
         left: images.harvestorLeft,
         right: images.harvestorRight
     };
-    const harvester = new Harvester(0, 0, harvesterImages);
+    const harvester = new Harvester(0, 0, harvesterImages, paddock);
 
     canvas.addEventListener('click', (event) => {
         const rect = canvas.getBoundingClientRect();

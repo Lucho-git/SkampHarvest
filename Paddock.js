@@ -1,5 +1,5 @@
 export class Plot {
-    constructor(coordinates, yieldEfficiency, zone, farmed = false, needsRedraw = true) {
+    constructor(coordinates, yieldEfficiency, zone, farmed = false, needsRedraw = true, needsHighlight = false) {
         this.coordinates = coordinates;
         this.size = 12 * 12 / 10000; // Area in hectares
         this.yieldEfficiency = yieldEfficiency;
@@ -7,6 +7,7 @@ export class Plot {
         this.zone = zone;
         this.farmed = farmed;
         this.needsRedraw = needsRedraw;
+        this.needsHighlight = needsHighlight;
     }
 }
 
