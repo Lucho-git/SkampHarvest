@@ -19,6 +19,7 @@ export class Paddock {
         this.zoneYieldEfficiency = zoneYieldEfficiency;
         this.borderThickness = borderThickness;
         this.plots = this.createFarmland();
+        this.needsYieldUpdate = new Array(this.paddockWidth).fill(true); // Array to track which rows need yield updates
     }
 
     createFarmland() {
@@ -59,6 +60,7 @@ export class Paddock {
 
     farmPlot(x, y) {
         let plot = this.plots[y][x];
+        this.needsYieldUpdate[y] = true; // Mark this row for yield update
         if (plot.zone !== 0 && !plot.farmed) {
             plot.farmed = true;
             plot.needsRedraw = true;
@@ -81,6 +83,9 @@ export class Paddock {
     }
 
     calculateRowYield(row) {
+        if (!this.needsYieldUpdate[row]) {
+            return;
+        }
         let rowYield = 0;
         this.plots[row].forEach(plot => {
             // Consider only farmable plots that haven't been farmed yet
@@ -88,6 +93,7 @@ export class Paddock {
                 rowYield += plot.yieldValue;
             }
         });
+        this.needsYieldUpdate[row] = false; // Reset flag after updating
         return rowYield;
     }
 

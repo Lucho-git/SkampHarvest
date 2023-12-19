@@ -65,10 +65,23 @@ function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, col
         }
 
         // Calculate and display the yield for the row
-        let rowYield = paddock.calculateRowYield(y);
-        let textXPosition = gridWidth + 10; // Position text after the grid
-        let textYPosition = y * cellHeight + cellHeight / 2;
-        ctx.fillText(`# ${y} yield: ${rowYield.toFixed(2)}`, textXPosition, textYPosition);
+        if (paddock.needsYieldUpdate[y]) {
+            let textXPosition = gridWidth + 10;
+            let textYPosition = y * cellHeight + cellHeight / 2;
+
+            // Calculate the area to clear
+            const clearX = textXPosition;
+            const clearY = textYPosition - cellHeight / 2;
+            const clearWidth = gridWidth - 10; // Adjust as needed
+            const clearHeight = cellHeight;
+
+            // Clear the area
+            ctx.clearRect(clearX, clearY, clearWidth, clearHeight);
+
+            let rowYield = paddock.calculateRowYield(y);
+            ctx.fillStyle = 'black';
+            ctx.fillText(`Row ${y} yield: ${rowYield.toFixed(2)}`, textXPosition, textYPosition);
+        }
     }
 }
 
