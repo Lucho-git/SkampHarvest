@@ -11,7 +11,7 @@ export class Harvester extends Vehicle {
 
     interact(nextX, nextY){
         super.interact(nextX, nextY)
-        let nextPlot = this.paddock.plots[nextY, nextX]
+        let nextPlot = this.paddock.plots[nextY][nextX];
         if (nextPlot.zone !== 0 && !nextPlot.farmed) {
             let plotYield = this.paddock.farmPlot(nextX, nextY);
             if (plotYield && this.currentLoad + plotYield <= this.storageCapacity) {

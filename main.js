@@ -14,7 +14,7 @@ function drawGridlines(ctx, paddock, cellWidth, cellHeight) {
     }
 }
 
-function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, colors, harvester) {
+function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, colors, vehicles) {
     ctx.font = '20px Arial';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
@@ -46,23 +46,25 @@ function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, col
                 plot.needsRedraw = false;
             }
 
-            if (harvester.destination && harvester.destination.x === x && harvester.destination.y === y) {
-                if (harvester.lastDestination) {
-                    // Check if lastDestination indices are within the bounds of paddock.plots
-                    if (harvester.lastDestination.x >= 0 && harvester.lastDestination.x < paddock.paddockLength &&
-                        harvester.lastDestination.y >= 0 && harvester.lastDestination.y < paddock.paddockWidth) {
-                        
-                        let redraw = paddock.plots[harvester.lastDestination.y][harvester.lastDestination.x];
-                        redraw.needsRedraw = true;
-                        console.log(redraw);
+            for (const vehicle of vehicles){
+                if (vehicle.destination && vehicle.destination.x === x && vehicle.destination.y === y) {
+                    if (vehicle.lastDestination) {
+                        // Check if lastDestination indices are within the bounds of paddock.plots
+                        if (vehicle.lastDestination.x >= 0 && vehicle.lastDestination.x < paddock.paddockLength &&
+                            vehicle.lastDestination.y >= 0 && vehicle.lastDestination.y < paddock.paddockWidth) {
+                            
+                            let redraw = paddock.plots[vehicle.lastDestination.y][vehicle.lastDestination.x];
+                            redraw.needsRedraw = true;
+                            console.log(redraw);
+                        }
+                        vehicle.lastDestination = null; // Reset lastDestination after processing
                     }
-                    harvester.lastDestination = null; // Reset lastDestination after processing
-                }
 
-                if (plot.needsHighlight){
-                    ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';  // Use semi-transparent red
-                    ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
-                    plot.needsHighlight = false; // Reset the flag after drawing
+                    if (plot.needsHighlight){
+                        ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';  // Use semi-transparent red
+                        ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                        plot.needsHighlight = false; // Reset the flag after drawing
+                    }
                 }
             }
         }
@@ -132,9 +134,15 @@ function startApplication() {
         right: images.chaserBinRight
     };
     
-    const harvester = new ChaserBin(0, 0, chaserBinImages, paddock);
+    let vehicles = [
+        new Harvester(0, 0, harvesterImages, paddock),
+        new ChaserBin(5, 5, chaserBinImages, paddock)
+        // Add more vehicles as needed
+    ];
 
     
+    let activeVehicleIndex = 0; // Index to track the active vehicle
+
     canvas.addEventListener('click', (event) => {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
@@ -142,14 +150,19 @@ function startApplication() {
 
         const cellX = Math.floor(x / cellWidth);
         const cellY = Math.floor(y / cellHeight);
-
-        harvester.setDestination(cellX, cellY);
-    });
-
-    canvas.addEventListener('', (event) => {
-
+    
+        vehicles[activeVehicleIndex].setDestination(cellX, cellY);
 
     });
+
+    function switchActiveVehicle(keyCode) {
+        const vehicleNumber = parseInt(keyCode.charAt(keyCode.length - 1), 10);
+        if (!isNaN(vehicleNumber) && vehicleNumber >= 1 && vehicleNumber <= vehicles.length) {
+            activeVehicleIndex = vehicleNumber - 1;
+            console.log(`Switched to vehicle ${activeVehicleIndex + 1}`);
+        }
+    }
+
 
     function handleKeyPress(event) {
         console.log(event.code + 'Shift pressed!');
@@ -162,12 +175,19 @@ function startApplication() {
                 }
             }
         }
+
+        if (event.code.startsWith('Digit')) {
+            console.log('Switching to Vehicle' + event.code)
+            switchActiveVehicle(event.code);
+        }    
     }
 
     function gameLoop() {
-        drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, colors, harvester);
-        harvester.move(paddock);
-        harvester.draw(ctx, cellWidth, cellHeight);
+        drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, colors, vehicles);
+        for (const vehicle of vehicles) {
+            vehicle.move();
+            vehicle.draw(ctx, cellWidth, cellHeight);
+        }
         requestAnimationFrame(gameLoop);
     }
     window.addEventListener('keydown', handleKeyPress);
