@@ -1,6 +1,8 @@
 import { Paddock } from './Paddock.js';
 import { loadImages, images } from './imageLoader.js';
-import { Harvester } from './harvester.js';
+import { Harvester } from './Harvester.js';
+import { ChaserBin } from './ChaserBin.js';
+import { Vehicle } from './Vehicle.js';
 
 
 function drawGridlines(ctx, paddock, cellWidth, cellHeight) {
@@ -27,7 +29,7 @@ function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, col
 
             if (plot.needsRedraw) {
                 // Redraw logic for the cell
-                console.log('redrawing', plot.coordinates);
+                //console.log('redrawing', plot.coordinates);
                 ctx.fillStyle = 'black'
                 ctx.fillStyle = colors[plot.zone];
                 ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
@@ -94,7 +96,7 @@ function startApplication() {
     const ctx = canvas.getContext('2d');
 
     // Create a Paddock instance
-    let paddock = new Paddock(84, 120, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
+    let paddock = new Paddock(40, 30, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
     
     const cellWidth = 80;
     const cellHeight = 80;
@@ -123,8 +125,16 @@ function startApplication() {
         left: images.harvestorLeft,
         right: images.harvestorRight
     };
-    const harvester = new Harvester(0, 0, harvesterImages, paddock);
+    const chaserBinImages = {
+        up: images.chaserBinUp,
+        down: images.chaserBinDown,
+        left: images.chaserBinLeft,
+        right: images.chaserBinRight
+    };
+    
+    const harvester = new ChaserBin(0, 0, chaserBinImages, paddock);
 
+    
     canvas.addEventListener('click', (event) => {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
@@ -155,8 +165,6 @@ function startApplication() {
     }
 
     function gameLoop() {
-        //ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Draw the initial gridlines
         drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, colors, harvester);
         harvester.move(paddock);
         harvester.draw(ctx, cellWidth, cellHeight);

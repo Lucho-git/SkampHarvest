@@ -6,6 +6,10 @@ const imagePaths = {
     harvestorDown:'images/harvestorDown.png',
     harvestorLeft:'images/harvestorLeft.png',
     harvestorRight:'images/harvestorRight.png',
+    chaserBinUp: 'images/chaserBinUp.png',
+    chaserBinDown: 'images/chaserBinDown.png',
+    chaserBinLeft: 'images/chaserBinLeft.png',
+    chaserBinRight: 'images/chaserBinRight.png',
   };
 
   const images = {};
