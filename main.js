@@ -135,8 +135,10 @@ function startApplication() {
     };
     
     let vehicles = [
+        new ChaserBin(5, 5, chaserBinImages, paddock),
         new Harvester(0, 0, harvesterImages, paddock),
-        new ChaserBin(5, 5, chaserBinImages, paddock)
+        new Harvester(0, 0, harvesterImages, paddock)
+
         // Add more vehicles as needed
     ];
 
