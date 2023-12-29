@@ -21,6 +21,8 @@ export class Paddock {
         this.borderThickness = borderThickness;
         this.plots = this.createFarmland();
         this.needsYieldUpdate = new Array(this.paddockWidth).fill(true); // Array to track which rows need yield updates
+        this.tramlines = []; // Array to store tramlines
+        this.generateTramlines(); // Call this method to populate tramlines upon creation
     }
 
     createFarmland() {
@@ -55,6 +57,26 @@ export class Paddock {
                 return 2;  // Top right quadrant
             } else {
                 return 3;  // Bottom quadrants
+            }
+        }
+    }
+
+    generateTramlines() {
+        for (let y = 0; y < this.paddockWidth; y++) {
+            let tramline = [];
+            for (let x = 0; x < this.paddockLength; x++) {
+                let plot = this.plots[y][x];
+                if (plot.zone !== 0) { // Check if the plot is farmable
+                    tramline.push(plot);
+                } else {
+                    if (tramline.length > 0) {
+                        this.tramlines.push(tramline); // Store the tramline if it has farmable plots
+                        tramline = []; // Reset for the next potential tramline
+                    }
+                }
+            }
+            if (tramline.length > 0) {
+                this.tramlines.push(tramline); // Store the last tramline in the row if any
             }
         }
     }

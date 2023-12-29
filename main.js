@@ -5,47 +5,72 @@ import { ChaserBin } from './ChaserBin.js';
 import { Vehicle } from './Vehicle.js';
 
 
-function drawGridlines(ctx, paddock, cellWidth, cellHeight) {
+function drawGridlines(gridCtx, paddockCtx, paddock, cellWidth, cellHeight, paddockWidth, paddockHeight, uiWidth, uiHeight) {
+    // Define colors for different areas
+    const paddockBorderColor = 'rgba(34, 139, 34, 0.3)'; // Green with transparency
+    const uiBorderColor = 'rgba(0, 0, 255, 0.3)'; // Blue with transparency
+    const gridColor = 'rgba(0, 0, 0, 0.1)'; // Light black with transparency
+    
+    
+    // Draw paddock border with fill
+    paddockCtx.fillStyle = paddockBorderColor;
+    paddockCtx.fillRect(0, 0, paddockWidth, paddockHeight);
+
+    // Draw UI border with fill
+    paddockCtx.fillStyle = uiBorderColor;
+    paddockCtx.fillRect(paddockWidth, 0, uiWidth - paddockWidth, uiHeight);
+
+
+    // Draw grid lines
+    gridCtx.strokeStyle = 'black';
     for (let y = 0; y < paddock.paddockWidth; y++) {
         for (let x = 0; x < paddock.paddockLength; x++) {
-            ctx.strokeStyle = 'black';
-            ctx.strokeRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+            gridCtx.strokeRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
         }
     }
+
+    // // Draw paddock border
+    // paddockCtx.strokeStyle = 'green';
+    // paddockCtx.strokeRect(0, 0, paddockWidth, paddockHeight);
+
+    // // Draw UI border
+    // paddockCtx.strokeStyle = 'blue';
+    // paddockCtx.strokeRect(0, 0, uiWidth, uiHeight); // Drawing at the very edge of the canvas
 }
 
-function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, colors, vehicles) {
-    ctx.font = '20px Arial';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'black';  // Color for text
+function drawPaddockAndYield(paddockCtx, paddock, cellWidth, cellHeight, gridWidth, colors, vehicles) {
+    let fontSize = Math.max(Math.floor(cellHeight / 4), 10); // Ensure a minimum font size, e.g., 10px
+    paddockCtx.font = fontSize + 'px Arial';
+    paddockCtx.textAlign = 'left';
+    paddockCtx.textBaseline = 'middle';
+    paddockCtx.fillStyle = 'black';  // Color for text
 
 
     for (let y = 0; y < paddock.paddockWidth; y++) {
         for (let x = 0; x < paddock.paddockLength; x++) {
             let plot = paddock.plots[y][x];
     
-            // Draw the base cell color
-
+            // Draw the paddock areas, crops, and status
             if (plot.needsRedraw) {
                 // Redraw logic for the cell
                 //console.log('redrawing', plot.coordinates);
-                ctx.fillStyle = 'black'
-                ctx.fillStyle = colors[plot.zone];
-                ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                paddockCtx.fillStyle = 'black'
+                paddockCtx.fillStyle = colors[plot.zone];
+                paddockCtx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
 
                 // Check if the plot is farmable and not yet farmed, then draw the wheat image
                 if (plot.zone !== 0 && !plot.farmed) {
-                    ctx.drawImage(images.wheat, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                    paddockCtx.drawImage(images.wheat, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
                 }
                 if (plot.zone !== 0 && plot.farmed) {
-                    ctx.drawImage(images.dirt, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                    paddockCtx.drawImage(images.dirt, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
                 }
 
                 // Reset the flag
                 plot.needsRedraw = false;
             }
 
+            // Draw vehicles destination on the paddock
             for (const vehicle of vehicles){
                 if (vehicle.destination && vehicle.destination.x === x && vehicle.destination.y === y) {
                     if (vehicle.lastDestination) {
@@ -61,8 +86,8 @@ function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, col
                     }
 
                     if (plot.needsHighlight){
-                        ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';  // Use semi-transparent red
-                        ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                        paddockCtx.fillStyle = 'rgba(255, 0, 0, 0.5)';  // Use semi-transparent red
+                        paddockCtx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
                         plot.needsHighlight = false; // Reset the flag after drawing
                     }
                 }
@@ -81,36 +106,79 @@ function drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, col
             const clearHeight = cellHeight;
 
             // Clear the area
-            ctx.clearRect(clearX, clearY, clearWidth, clearHeight);
+            paddockCtx.clearRect(clearX, clearY, clearWidth, clearHeight);
 
             let rowYield = paddock.calculateRowYield(y);
-            ctx.fillStyle = 'black';
-            ctx.fillText(`Row ${y} yield: ${rowYield.toFixed(2)}`, textXPosition, textYPosition);
+            paddockCtx.fillStyle = 'black';
+            paddockCtx.fillText(`Row ${y} yield: ${rowYield.toFixed(2)}`, textXPosition, textYPosition);
         }
     }
+
+    drawTramlines(paddockCtx, paddock, cellWidth, cellHeight)
+
 }
+
+function drawTramlines(paddockCtx, paddock, cellWidth, cellHeight){
+    paddockCtx.strokeStyle = 'rgba(150, 40, 27, 0.8)'; // Gold color
+    paddockCtx.lineWidth = 3; // Width of the tramline
+
+    paddock.tramlines.forEach(tramline => {
+        if (tramline.length > 0) {
+            let firstPlot = tramline[0];
+            let lastPlot = tramline[tramline.length - 1];
+
+            // Start from the middle of the first plot
+            let startX = firstPlot.coordinates.x * cellWidth + cellWidth / 2;
+            let startY = firstPlot.coordinates.y * cellHeight + cellHeight / 2;
+
+            // End at the right edge of the last plot
+            let endX = lastPlot.coordinates.x * cellWidth + cellWidth / 2;
+            let endY = lastPlot.coordinates.y * cellHeight + cellHeight / 2;
+
+            paddockCtx.beginPath();
+            paddockCtx.moveTo(startX, startY);
+            paddockCtx.lineTo(endX, endY);
+            paddockCtx.stroke();
+        }
+    });
+}
+
 
 function startApplication() {
     console.log('Starting')
     const gridCanvas = document.getElementById('gridCanvas');
-    const canvas = document.getElementById('paddockCanvas');
+    const paddockCanvas = document.getElementById('paddockCanvas');
     const gridCtx = gridCanvas.getContext('2d');
-    const ctx = canvas.getContext('2d');
+    const paddockCtx = paddockCanvas.getContext('2d');
+
+    // UI dimensions
+    const uiWidth = 3500; // Total UI width
+    const uiHeight = 2400; // Total UI height
+    // Separate padding sizes for the right and bottom
+    const paddockPaddingRight = 200; // Example padding for the right
+    const paddockPaddingBottom = 100; // Example padding for the bottom
+
+    // Set paddock canvas dimensions
+    paddockCanvas.width = uiWidth;
+    paddockCanvas.height = uiHeight;
+
+    // Paddock dimensions
+    const paddockWidth = uiWidth - 2 * paddockPaddingRight;
+    const paddockHeight = uiHeight - 2 * paddockPaddingBottom;
 
     // Create a Paddock instance
-    let paddock = new Paddock(40, 30, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
-    
-    const cellWidth = 80;
-    const cellHeight = 80;
-    const gridWidth = paddock.paddockLength * cellWidth;
-    const canvasExtraWidth = 350;
+    let paddock = new Paddock(40, 20, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
 
-    // Adjust canvas width and gridCanvas width
-    canvas.width = gridWidth + canvasExtraWidth;
-    canvas.height = paddock.paddockWidth * cellHeight;
-    gridCanvas.width = gridWidth + canvasExtraWidth;
-    gridCanvas.height = paddock.paddockWidth * cellHeight;
+    // Determine the maximum possible square cell size
+    let cellSize = Math.min(paddockWidth / paddock.paddockLength, paddockHeight / paddock.paddockWidth);
 
+    // Grid dimensions based on cell size
+    const gridWidth = cellSize * paddock.paddockLength;
+    const gridHeight = cellSize * paddock.paddockWidth;
+
+    // Set grid canvas dimensions
+    gridCanvas.width = gridWidth;
+    gridCanvas.height = gridHeight;
 
     // Colors for different zones
     const colors = {
@@ -144,17 +212,21 @@ function startApplication() {
 
     
     let activeVehicleIndex = 0; // Index to track the active vehicle
+    let isGamePaused = false;
 
-    canvas.addEventListener('click', (event) => {
-        const rect = canvas.getBoundingClientRect();
+    paddockCanvas.addEventListener('click', (event) => {
+        const rect = paddockCanvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
-
-        const cellX = Math.floor(x / cellWidth);
-        const cellY = Math.floor(y / cellHeight);
     
-        vehicles[activeVehicleIndex].setDestination(cellX, cellY);
-
+        // Calculate cell coordinates
+        const cellX = Math.floor(x / cellSize);
+        const cellY = Math.floor(y / cellSize);
+    
+        // Check if the click is within the grid area
+        if (cellX < paddock.paddockLength && cellY < paddock.paddockWidth) {
+            vehicles[activeVehicleIndex].setDestination(cellX, cellY);
+        }
     });
 
     function switchActiveVehicle(keyCode) {
@@ -178,6 +250,20 @@ function startApplication() {
             }
         }
 
+        if (event.key === 'p' || event.key ==='P'){
+            isGamePaused = !isGamePaused; 
+            if (isGamePaused){
+                console.log('Game Paused');
+            }else{ 
+                console.log('Game unpaused');
+            }
+        }
+
+        if (event.key === 'm' || event.key ==='M'){
+            startAIHarvesting(vehicles[activeVehicleIndex], paddock); // Assuming 'vehicles[0]' is a harvester
+        }
+
+
         if (event.code.startsWith('Digit')) {
             console.log('Switching to Vehicle' + event.code)
             switchActiveVehicle(event.code);
@@ -185,15 +271,18 @@ function startApplication() {
     }
 
     function gameLoop() {
-        drawPaddockAndYield(ctx, paddock, cellWidth, cellHeight, gridWidth, colors, vehicles);
-        for (const vehicle of vehicles) {
-            vehicle.move();
-            vehicle.draw(ctx, cellWidth, cellHeight);
+        if (!isGamePaused) {
+            drawPaddockAndYield(paddockCtx, paddock, cellSize, cellSize, gridWidth, colors, vehicles);
+            for (const vehicle of vehicles) {
+                vehicle.move();
+                vehicle.draw(paddockCtx, cellSize, cellSize);
+            }
         }
         requestAnimationFrame(gameLoop);
     }
     window.addEventListener('keydown', handleKeyPress);
-    drawGridlines(gridCtx, paddock, cellWidth, cellHeight);
+    console.log(paddockCanvas.height, paddockCanvas.width)
+    drawGridlines(gridCtx, paddockCtx, paddock, cellSize, cellSize, paddockWidth, paddockHeight, uiWidth, uiHeight);
 
     gameLoop();
 
