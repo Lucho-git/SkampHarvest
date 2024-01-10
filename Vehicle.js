@@ -76,8 +76,8 @@ export class Vehicle {
     }
 
     interact(nextX, nextY){
-        console.log('Interact with next target block')
-        console.log(nextX, nextY)
+        // console.log('Interact with next target block')
+        // console.log(nextX, nextY)
     }
 
 

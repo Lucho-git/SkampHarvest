@@ -1,10 +1,20 @@
 import { Vehicle } from './Vehicle.js';
 
+export const HarvesterState = {
+    ON_TRAMLINE: 'onTramline',
+    EN_ROUTE: 'enRoute',
+    ON_EDGE: 'onEdge'
+};
 export class Harvester extends Vehicle {
     constructor(x, y, images, paddock) {
         super(x, y, images, paddock);
         this.storageCapacity = 10; // Specific to Harvester
         this.currentLoad = 0;
+        this.stopHarvesting = true;
+        this.currentTramline = {
+            state: HarvesterState.ON_EDGE, // Default state
+            tramlineIndex: null           // No tramline assigned yet
+        }
         // Other harvester-specific properties
     }
 

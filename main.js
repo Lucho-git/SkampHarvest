@@ -3,6 +3,9 @@ import { loadImages, images } from './imageLoader.js';
 import { Harvester } from './Harvester.js';
 import { ChaserBin } from './ChaserBin.js';
 import { Vehicle } from './Vehicle.js';
+import { HarvesterState } from './Harvester.js';
+
+
 
 
 function drawGridlines(gridCtx, paddockCtx, paddock, cellWidth, cellHeight, paddockWidth, paddockHeight, uiWidth, uiHeight) {
@@ -143,25 +146,33 @@ function drawTramlines(paddockCtx, paddock, cellWidth, cellHeight){
     });
 }
 
-function startAIHarvesting(harvester, paddock) {
+function startAIHarvesting(harvester, paddock, allHarvesters) {
     let isEnRouteToTramline = false;
     let currentTramline = null;
 
     function aiStep() {
+        if (harvester.stopHarvesting) {
+            console.log("Harvesting stopped.");
+            harvester.currentTramline = { state: HarvesterState.ON_EDGE, tramlineIndex: null };
+            return;
+        }
         if (!harvester.destination || (harvester.x === harvester.destination.x && harvester.y === harvester.destination.y)) {
             if (isEnRouteToTramline) {
                 // If the harvester has reached the destination, start harvesting
                 harvestTramline(harvester, currentTramline, paddock);
                 isEnRouteToTramline = false;  // Reset the flag
+                harvester.currentTramline = { state: HarvesterState.ON_TRAMLINE, tramlineIndex: paddock.tramlines.indexOf(currentTramline) };
             } else {
                 // Find the nearest tramline and set the harvester's destination
-                let nearest = findNearestTramline(harvester, paddock);
+                let nearest = findNearestTramline(harvester, paddock, allHarvesters);
                 if (nearest && nearest.point) {
                     harvester.setDestination(nearest.point.x, nearest.point.y);
                     currentTramline = nearest.tramline;  // Store the current tramline
                     isEnRouteToTramline = true;  // Set the flag to indicate the harvester is en route
+                    harvester.currentTramline = { state: HarvesterState.EN_ROUTE, tramlineIndex: paddock.tramlines.indexOf(currentTramline)};
                 } else {
                     console.log("No valid point found or all tramlines harvested.");
+                    harvester.currentTramline = { state: HarvesterState.ON_EDGE, tramlineIndex: null };
                     return;
                 }
             }
@@ -174,6 +185,7 @@ function startAIHarvesting(harvester, paddock) {
 
 function harvestTramline(harvester, tramline, paddock) {
     if (!tramline || tramline.length === 0) {
+        harvester.currentTramline = 'edge'; // Set to 'edge' if tramline is invalid
         console.error('Invalid tramline passed to harvestTramline.');
         return;
     }
@@ -209,17 +221,19 @@ function harvestTramline(harvester, tramline, paddock) {
     console.log(`Chosen destination block: (${nextX}, ${nextY})`);
 
     harvester.setDestination(nextX, nextY);
+    harvester.currentTramline = paddock.tramlines.indexOf(tramline);
 }
 
-function findNearestTramline(harvester, paddock) {
+function findNearestTramline(harvester, paddock, allHarvesters) {
     let closest = {
         point: null,
         tramline: null
     };
     let minDistance = Number.MAX_VALUE;
 
-    paddock.tramlines.forEach(tramline => {
-        if (tramline.some(plot => !plot.farmed)) {
+
+    paddock.tramlines.forEach((tramline, index) => {
+        if (tramline.some(plot => !plot.farmed) && !isTramlineOccupied(index, allHarvesters, harvester)) {
             let checkAdjacentPoints = (plot) => {
                 let adjacentPoints = [
                     { x: plot.coordinates.x - 1, y: plot.coordinates.y },
@@ -253,6 +267,13 @@ function isPartOfAnyTramline(paddock, x, y) {
     return paddock.tramlines.some(tramline => tramline.some(plot => plot.coordinates.x === x && plot.coordinates.y === y));
 }
 
+function isTramlineOccupied(tramlineIndex, allHarvesters, currentHarvester) {
+    console.log(allHarvesters)
+    return allHarvesters.some(otherHarvester => 
+        otherHarvester !== currentHarvester &&
+        (otherHarvester.currentTramline.state !== HarvesterState.ON_EDGE) &&
+        (otherHarvester.currentTramline.tramlineIndex === tramlineIndex));
+}
 
 function startApplication() {
     console.log('Starting')
@@ -313,9 +334,9 @@ function startApplication() {
     };
     
     let vehicles = [
-        new ChaserBin(5, 5, chaserBinImages, paddock),
-        new Harvester(0, 0, harvesterImages, paddock),
-        new Harvester(0, 0, harvesterImages, paddock)
+        new ChaserBin(0, 0, chaserBinImages, paddock),
+        new Harvester(0, 2, harvesterImages, paddock),
+        new Harvester(0, 4, harvesterImages, paddock)
 
         // Add more vehicles as needed
     ];
@@ -370,7 +391,14 @@ function startApplication() {
         }
 
         if (event.key === 'm' || event.key ==='M'){
-            startAIHarvesting(vehicles[activeVehicleIndex], paddock); // Assuming 'vehicles[0]' is a harvester
+            let vehicle = vehicles[activeVehicleIndex]
+            if(vehicle instanceof Harvester){
+                vehicle.stopHarvesting = !vehicle.stopHarvesting
+                if(!vehicle.stopHarvesting){
+                    let harvesters = vehicles.filter(v => v instanceof Harvester);
+                    startAIHarvesting(vehicle, paddock, harvesters);
+                }
+            }
         }
 
 
