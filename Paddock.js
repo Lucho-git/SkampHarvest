@@ -81,6 +81,14 @@ export class Paddock {
         }
     }
 
+    checkPlot(x, y){
+        let plot = this.plots[y][x];
+        if (plot.zone !== 0 && !plot.farmed) {
+            return plot.yieldValue;
+        }
+        else return
+    }
+
     farmPlot(x, y) {
         let plot = this.plots[y][x];
         this.needsYieldUpdate[y] = true; // Mark this row for yield update

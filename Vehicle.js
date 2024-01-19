@@ -46,12 +46,13 @@ export class Vehicle {
 
         // Alternative logic goes here
         this.interact(nextX, nextY);
+        if (this.destination === null) return;
 
         // Update image based on direction
-        if (dx > 0) this.currentImage = this.images.right;
-        else if (dx < 0) this.currentImage = this.images.left;
-        else if (dy > 0) this.currentImage = this.images.down;
-        else if (dy < 0) this.currentImage = this.images.up;
+        if (dx > 0) this.currentImage = this.images.right, this.currentDirection = 'right';
+        else if (dx < 0) this.currentImage = this.images.left, this.currentDirection = 'left';
+        else if (dy > 0) this.currentImage = this.images.down, this.currentDirection = 'down';
+        else if (dy < 0) this.currentImage = this.images.up, this.currentDirection = 'up';
 
         // Move one cell at a time towards the destination
         if (dx !== 0) this.x = nextX;
