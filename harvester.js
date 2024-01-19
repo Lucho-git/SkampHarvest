@@ -10,7 +10,7 @@ export class Harvester extends Vehicle {
         super(x, y, images, paddock);
         this.storageCapacity = 10; // Specific to Harvester
         this.currentLoad = 0;
-        this.moveDelay = 10;
+        this.moveDelay = 20;
         this.stopHarvesting = true;
         this.currentTramline = {
             state: HarvesterState.ON_EDGE, // Default state
