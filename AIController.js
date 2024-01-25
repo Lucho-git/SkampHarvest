@@ -1,6 +1,8 @@
 import { Harvester } from './Harvester.js';
 import { HarvesterState } from './Harvester.js'; // If this is not already globally accessible
-
+const SAFE_DISTANCE_THRESHOLD = 10;
+const REDUCED_SPEED = 10;
+const NORMAL_SPEED = 5;
 
 export function startAIHarvesting(harvester, paddock, allHarvesters) {
     //Free roam harvesting
@@ -154,6 +156,7 @@ export function startAIPattern(harvester, paddock, allHarvesters) {
             harvester.currentTramline = { state: HarvesterState.ON_EDGE, tramlineIndex: null };
             return;
         }
+
         if (!harvester.destination || (harvester.x === harvester.destination.x && harvester.y === harvester.destination.y)) {
             if (isEnRouteToTramline) {
                 // If the harvester has reached the destination, start harvesting
@@ -175,11 +178,43 @@ export function startAIPattern(harvester, paddock, allHarvesters) {
                 }
             }
         }
+
+        // Trailing logic
+        if (harvester.id > 0) { // Assumes harvester IDs start from 0
+            let leadingHarvester = allHarvesters.find(h => h.id === harvester.id - 1);
+            if (areHarvestersMovingInSameDirection(harvester, leadingHarvester)) {
+                let distance = calculateDistance(harvester, leadingHarvester);
+                if (distance < SAFE_DISTANCE_THRESHOLD) {
+                    harvester.moveDelay = REDUCED_SPEED;
+                } else {
+                    harvester.moveDelay = NORMAL_SPEED;
+                }
+            }
+        }
+
         requestAnimationFrame(aiStep);
     }
 
     aiStep();
 }
+
+
+function areHarvestersMovingInSameDirection(harvester1, harvester2) {
+    // Compare destinations or movement vectors
+    // Return true if moving in the same direction, false otherwise
+    return true
+}
+
+function calculateDistance(harvester1, harvester2) {
+    // Calculate distance between two harvesters
+    let x1 = harvester1.x;
+    let y1 = harvester1.y;
+    let x2 = harvester2.x;
+    let y2 = harvester2.y;
+
+    return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+}
+
 
 
 function findNextTramline(harvester, paddock) {

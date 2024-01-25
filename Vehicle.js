@@ -1,6 +1,6 @@
 // Vehicle.js
 export class Vehicle {
-    constructor(x, y, images, paddock, moveDelay = 5, storageCapacity=10) {
+    constructor(x, y, images, paddock, id, moveDelay = 5, storageCapacity=10) {
         this.x = x;
         this.y = y;
         this.images = images; // Object containing images for each direction
@@ -13,6 +13,7 @@ export class Vehicle {
         this.storageCapacity = storageCapacity;// Total storage capacity
         this.currentLoad = 0; // Current amount of yield in storage
         this.paddock = paddock;
+        this.id = id;
     }
 
     setDestination(x, y) {

@@ -6,8 +6,8 @@ export const HarvesterState = {
     ON_EDGE: 'onEdge'
 };
 export class Harvester extends Vehicle {
-    constructor(x, y, images, paddock, chaserBinFinder) {
-        super(x, y, images, paddock);
+    constructor(x, y, images, paddock, id, chaserBinFinder) {
+        super(x, y, images, paddock, id);
         this.storageCapacity = 10; // Specific to Harvester
         this.currentLoad = 0;
         this.moveDelay = 5;
