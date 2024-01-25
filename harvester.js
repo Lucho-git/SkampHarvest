@@ -10,15 +10,24 @@ export class Harvester extends Vehicle {
         super(x, y, images, paddock);
         this.storageCapacity = 10; // Specific to Harvester
         this.currentLoad = 0;
-        this.moveDelay = 20;
+        this.moveDelay = 5;
         this.stopHarvesting = true;
         this.currentTramline = {
             state: HarvesterState.ON_EDGE, // Default state
             tramlineIndex: null           // No tramline assigned yet
         }
         this.chaserBinFinder = chaserBinFinder;
+        this.tramlineSequence = []; // Array to store sequence of tramline indices
+        this.nextTramlineIndex = 0; // Index to track the current position in nextTramlines
+        // Other harvester-specific properties
 
         // Other harvester-specific properties
+    }
+
+    // Add a method to set the next tramlines sequence
+    setTramlineSequence(tramlineSequence) {
+        this.tramlineSequence = tramlineSequence;
+        this.nextTramlineIndex = 0; // Reset to start from the beginning of the sequence
     }
 
     move(){
@@ -44,13 +53,6 @@ export class Harvester extends Vehicle {
                 this.destination = null;
             }
         }
-
-        // // Find a Chaser Bin nearby
-        // let nearbyChaserBin = this.chaserBinFinder(this.x, this.y);
-        // if (nearbyChaserBin) {
-        //     console.log('Unloading')
-        //     this.unloadToChaserBin(nearbyChaserBin);
-        // }
     }
 
     checkForChaserBinAndUnload(vehicles) {

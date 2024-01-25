@@ -2,7 +2,7 @@ import { Paddock } from './Paddock.js';
 import { loadImages, images } from './imageLoader.js';
 import { Harvester } from './Harvester.js';
 import { ChaserBin } from './ChaserBin.js';
-import { startAIHarvesting } from './AIController.js';
+import { startAIHarvesting, startAIPattern, islandPattern, efficientPattern } from './AIController.js';
 
 
 
@@ -201,9 +201,9 @@ function startApplication() {
     const paddockHeight = uiHeight - 2 * paddockPaddingBottom;
 
     // Create a Paddock instance
-    let paddock = new Paddock(80, 40, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
+    let paddock = new Paddock(40, 60, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
 
-    // Determine the maximum possible square cell size
+    // Determine the maximum possible square cell sizeca
     let cellSize = Math.min(paddockWidth / paddock.paddockLength, paddockHeight / paddock.paddockWidth);
 
     // Grid dimensions based on cell size
@@ -229,6 +229,7 @@ function startApplication() {
         left: images.harvestorLeft,
         right: images.harvestorRight
     };
+
     const chaserBinImages = {
         up: images.chaserBinUp,
         down: images.chaserBinDown,
@@ -240,6 +241,7 @@ function startApplication() {
         new ChaserBin(0, 0, chaserBinImages, paddock),
         new Harvester(0, 2, harvesterImages, paddock, (harvester) => findNearbyChaserBin(harvester, vehicles)),
         new Harvester(0, 4, harvesterImages, paddock, (harvester) => findNearbyChaserBin(harvester, vehicles)),
+        new Harvester(0, 6, harvesterImages, paddock, (harvester) => findNearbyChaserBin(harvester, vehicles)),
         // Add more vehicles as needed
     ];
 
@@ -303,6 +305,17 @@ function startApplication() {
             }
         }
 
+        if (event.key === 'v' || event.key ==='V'){
+            let vehicle = vehicles[activeVehicleIndex]
+            if(vehicle instanceof Harvester){
+                vehicle.stopHarvesting = !vehicle.stopHarvesting
+                if(!vehicle.stopHarvesting){
+                    let harvesters = vehicles.filter(v => v instanceof Harvester);
+                    startAIPattern(vehicle, paddock, harvesters);
+                }
+            }
+        }
+
         if (event.key === 'e' || event.key ==='E'){
             let vehicle = vehicles[activeVehicleIndex]
             vehicle.currentLoad = 0;
@@ -317,6 +330,33 @@ function startApplication() {
             let vehicle = vehicles[activeVehicleIndex]
             vehicle.moveDelay ++;
         }
+
+        if (event.key === 'u' || event.key ==='U'){
+            
+            islandPattern(vehicles, paddock)
+            let harvesters = vehicles.filter(v => v instanceof Harvester);
+            harvesters.forEach(harvester => {
+                harvester.stopHarvesting = false;
+                startAIPattern(harvester, paddock, harvesters);
+            });
+        }
+
+        if (event.key === 'i' || event.key ==='I'){
+            efficientPattern(vehicles, paddock)
+            let harvesters = vehicles.filter(v => v instanceof Harvester);
+            harvesters.forEach(harvester => {
+                harvester.stopHarvesting = false;
+                startAIPattern(harvester, paddock, harvesters);
+            });
+        }
+
+        if (event.key === 'o' || event.key ==='O'){
+            let vehicle = vehicles[activeVehicleIndex]
+            vehicle.setTramlineSequence([4,6,8,10,12,14,16,18,20]);
+            console.log(vehicle)
+        }
+
+
 
         if (event.code.startsWith('Digit')) {
             console.log('Switching to Vehicle' + event.code)

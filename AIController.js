@@ -135,3 +135,168 @@ function isTramlineOccupied(tramlineIndex, allHarvesters, currentHarvester) {
         (otherHarvester.currentTramline.state !== HarvesterState.ON_EDGE) &&
         (otherHarvester.currentTramline.tramlineIndex === tramlineIndex));
 }
+
+
+//New AI based off of specific instructions different from above functions
+
+
+
+
+export function startAIPattern(harvester, paddock, allHarvesters) {
+    //Free roam harvesting
+    console.log('Starting AI pattern')
+    let isEnRouteToTramline = false;
+    let currentTramline = null;
+
+    function aiStep() {
+        if (harvester.stopHarvesting) {
+            console.log("Harvesting stopped.");
+            harvester.currentTramline = { state: HarvesterState.ON_EDGE, tramlineIndex: null };
+            return;
+        }
+        if (!harvester.destination || (harvester.x === harvester.destination.x && harvester.y === harvester.destination.y)) {
+            if (isEnRouteToTramline) {
+                // If the harvester has reached the destination, start harvesting
+                harvestTramline(harvester, currentTramline, paddock);
+                isEnRouteToTramline = false;  // Reset the flag
+                harvester.currentTramline = { state: HarvesterState.ON_TRAMLINE, tramlineIndex: paddock.tramlines.indexOf(currentTramline) };
+            } else {
+                // Find the nearest tramline and set the harvester's destination
+                let nearest = findNextTramline(harvester, paddock, allHarvesters);
+                if (nearest && nearest.point) {
+                    harvester.setDestination(nearest.point.x, nearest.point.y);
+                    currentTramline = nearest.tramline;  // Store the current tramline
+                    isEnRouteToTramline = true;  // Set the flag to indicate the harvester is en route
+                    harvester.currentTramline = { state: HarvesterState.EN_ROUTE, tramlineIndex: paddock.tramlines.indexOf(currentTramline)};
+                } else {
+                    console.log("No valid point found or all tramlines harvested.");
+                    harvester.currentTramline = { state: HarvesterState.ON_EDGE, tramlineIndex: null };
+                    return;
+                }
+            }
+        }
+        requestAnimationFrame(aiStep);
+    }
+
+    aiStep();
+}
+
+
+function findNextTramline(harvester, paddock) {
+    // Ensure the harvester has a tramline sequence and a valid next index
+    if (!harvester.tramlineSequence || harvester.nextTramlineIndex >= harvester.tramlineSequence.length) {
+        console.log("No more tramlines in the sequence or invalid tramline sequence.");
+        console.log(harvester)
+        return { point: null, tramline: null };
+    }
+
+    let closest = {
+        point: null,
+        tramline: null
+    };
+    let minDistance = Number.MAX_VALUE;
+
+    // Get the next tramline from the sequence
+    console.log('Trying to find next tramline in sequence', harvester.tramlineSequence[harvester.nextTramlineIndex])
+    let tramlineIndex = harvester.tramlineSequence[harvester.nextTramlineIndex];
+    let tramline = paddock.tramlines[tramlineIndex];
+
+    // Function to check adjacent points
+    let checkAdjacentPoints = (plot) => {
+        let adjacentPoints = [
+            { x: plot.coordinates.x - 1, y: plot.coordinates.y },
+            { x: plot.coordinates.x + 1, y: plot.coordinates.y }
+        ];
+
+        adjacentPoints.forEach(point => {
+            if (point.x >= 0 && point.x < paddock.paddockLength && 
+                point.y >= 0 && point.y < paddock.paddockWidth && 
+                !isPartOfAnyTramline(paddock, point.x, point.y)) {
+                let distance = Math.abs(harvester.x - point.x) + Math.abs(harvester.y - point.y);
+                if (distance < minDistance) {
+                    closest.point = point;
+                    closest.tramline = tramline;
+                    minDistance = distance;
+                }
+            }
+        });
+    };
+
+    // Check adjacent points for both ends of the tramline
+    checkAdjacentPoints(tramline[0]);
+    checkAdjacentPoints(tramline[tramline.length - 1]);
+
+    // Increment the next tramline index for the harvester
+    harvester.nextTramlineIndex++;
+
+    return closest;
+}
+
+
+export function islandPattern(vehicles, paddock) {
+    const totalTramlines = paddock.tramlines.length;
+
+    const harvesters = vehicles.filter(vehicle => vehicle instanceof Harvester);
+    let harvesterCount = harvesters.length;
+    // Limit harvesterCount to a maximum of 4 as we only have sequences defined for up to 4 harvesters
+
+    if (harvesterCount == 2){
+        let firstHarvesterSequence = generateSequence(0, [7, -5, 3, 3], totalTramlines);
+        let secondHarvesterSequence = generateSequence(1, [5, -3, 1, 5], totalTramlines);
+        harvesters[0].setTramlineSequence(firstHarvesterSequence);
+        harvesters[1].setTramlineSequence(secondHarvesterSequence);
+    }
+    if (harvesterCount == 3){
+        let firstHarvesterSequence = generateSequence(0, [11, -8, 5, 4], totalTramlines);
+        let secondHarvesterSequence = generateSequence(1, [9, -6, 3, 6], totalTramlines);
+        let thirdHarvesterSequence = generateSequence(2, [7, -4, 1, 8], totalTramlines);
+        harvesters[0].setTramlineSequence(firstHarvesterSequence);
+        harvesters[1].setTramlineSequence(secondHarvesterSequence);
+        harvesters[2].setTramlineSequence(thirdHarvesterSequence);
+    }
+}
+
+
+export function efficientPattern(vehicles, paddock) {
+    const totalTramlines = paddock.tramlines.length;
+
+    const harvesters = vehicles.filter(vehicle => vehicle instanceof Harvester);
+    let harvesterCount = harvesters.length;
+    // Limit harvesterCount to a maximum of 4 as we only have sequences defined for up to 4 harvesters
+
+    if (harvesterCount == 2){
+        let firstHarvesterSequence = generateSequence(0, [3, 1], totalTramlines);
+        let secondHarvesterSequence = generateSequence(1, [1, 3], totalTramlines);
+        harvesters[0].setTramlineSequence(firstHarvesterSequence);
+        harvesters[1].setTramlineSequence(secondHarvesterSequence);
+    }
+    if (harvesterCount == 3){
+        let firstHarvesterSequence = generateSequence(0, [5,1], totalTramlines);
+        let secondHarvesterSequence = generateSequence(1, [3,3], totalTramlines);
+        let thirdHarvesterSequence = generateSequence(2, [1,5], totalTramlines);
+        harvesters[0].setTramlineSequence(firstHarvesterSequence);
+        harvesters[1].setTramlineSequence(secondHarvesterSequence);
+        harvesters[2].setTramlineSequence(thirdHarvesterSequence);
+    }
+}
+
+
+
+function generateSequence(startIndex, pattern, totalTramlines) {
+    let sequence = [startIndex];
+    let currentIndex = startIndex;
+    let patternIndex = 0;
+
+    while (true) {
+        currentIndex += pattern[patternIndex];
+        patternIndex = (patternIndex + 1) % pattern.length;
+
+        if (currentIndex < 0 || currentIndex >= totalTramlines) {
+            break;
+        }
+
+        sequence.push(currentIndex);
+    }
+
+    return sequence;
+}
