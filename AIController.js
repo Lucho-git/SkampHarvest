@@ -1,6 +1,6 @@
 import { Harvester } from './Harvester.js';
 import { HarvesterState } from './Harvester.js'; // If this is not already globally accessible
-const SAFE_DISTANCE_THRESHOLD = 10;
+const SAFE_DISTANCE_THRESHOLD = 5;
 const REDUCED_SPEED = 10;
 const NORMAL_SPEED = 5;
 
@@ -182,14 +182,13 @@ export function startAIPattern(harvester, paddock, allHarvesters) {
         // Trailing logic
         if (harvester.id > 0) { // Assumes harvester IDs start from 0
             let leadingHarvester = allHarvesters.find(h => h.id === harvester.id - 1);
-            if (areHarvestersMovingInSameDirection(harvester, leadingHarvester)) {
-                let distance = calculateDistance(harvester, leadingHarvester);
-                if (distance < SAFE_DISTANCE_THRESHOLD) {
-                    harvester.moveDelay = REDUCED_SPEED;
-                } else {
-                    harvester.moveDelay = NORMAL_SPEED;
-                }
+            let distance = calculateDistance(harvester, leadingHarvester);
+            if (distance < SAFE_DISTANCE_THRESHOLD & areHarvestersMovingInSameDirection(harvester, leadingHarvester)) {
+                harvester.moveDelay = REDUCED_SPEED;
+            } else {
+                harvester.moveDelay = NORMAL_SPEED;
             }
+            
         }
 
         requestAnimationFrame(aiStep);
@@ -200,9 +199,11 @@ export function startAIPattern(harvester, paddock, allHarvesters) {
 
 
 function areHarvestersMovingInSameDirection(harvester1, harvester2) {
-    // Compare destinations or movement vectors
     // Return true if moving in the same direction, false otherwise
-    return true
+    console.log('harvester1', harvester1.currentDirection,'harvester2', harvester2.currentDirection)
+    console.log('harvester1', harvester1.moveDelay,'harvester2', harvester2.moveDelay)
+    console.log (harvester1.currentDirection === harvester2.currentDirection)
+    return harvester1.currentDirection === harvester2.currentDirection;
 }
 
 function calculateDistance(harvester1, harvester2) {

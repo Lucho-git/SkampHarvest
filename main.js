@@ -241,6 +241,8 @@ function startApplication() {
         new ChaserBin(0, 0, chaserBinImages, paddock, 9),
         new Harvester(0, 2, harvesterImages, paddock, 0, (harvester) => findNearbyChaserBin(harvester, vehicles)),
         new Harvester(0, 4, harvesterImages, paddock, 1,(harvester) => findNearbyChaserBin(harvester, vehicles)),
+        new Harvester(0, 6, harvesterImages, paddock, 2,(harvester) => findNearbyChaserBin(harvester, vehicles)),
+
         // Add more vehicles as needed
     ];
 
