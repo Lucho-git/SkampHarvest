@@ -200,9 +200,6 @@ export function startAIPattern(harvester, paddock, allHarvesters) {
 
 function areHarvestersMovingInSameDirection(harvester1, harvester2) {
     // Return true if moving in the same direction, false otherwise
-    console.log('harvester1', harvester1.currentDirection,'harvester2', harvester2.currentDirection)
-    console.log('harvester1', harvester1.moveDelay,'harvester2', harvester2.moveDelay)
-    console.log (harvester1.currentDirection === harvester2.currentDirection)
     return harvester1.currentDirection === harvester2.currentDirection;
 }
 

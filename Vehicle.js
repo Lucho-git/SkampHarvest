@@ -1,6 +1,6 @@
 // Vehicle.js
 export class Vehicle {
-    constructor(x, y, images, paddock, id, moveDelay = 5, storageCapacity=10) {
+    constructor(x, y, images, paddock, id, moveDelay = 5, storageCapacity=1000) {
         this.x = x;
         this.y = y;
         this.images = images; // Object containing images for each direction

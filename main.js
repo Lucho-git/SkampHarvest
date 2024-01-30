@@ -2,6 +2,7 @@ import { Paddock } from './Paddock.js';
 import { loadImages, images } from './imageLoader.js';
 import { Harvester } from './Harvester.js';
 import { ChaserBin } from './ChaserBin.js';
+import { Timer } from './Timer.js';
 import { startAIHarvesting, startAIPattern, islandPattern, efficientPattern } from './AIController.js';
 
 
@@ -40,7 +41,7 @@ function drawGridlines(gridCtx, paddockCtx, paddock, cellWidth, cellHeight, padd
     // paddockCtx.strokeRect(0, 0, uiWidth, uiHeight); // Drawing at the very edge of the canvas
 }
 
-function drawPaddockAndYield(paddockCtx, paddock, cellWidth, cellHeight, gridWidth, colors, vehicles) {
+function drawPaddockAndYield(paddockCtx, paddock, cellWidth, cellHeight, gridWidth, colors, vehicles, timer) {
     let fontSize = Math.max(Math.floor(cellHeight / 4), 10); // Ensure a minimum font size, e.g., 10px
     paddockCtx.font = fontSize + 'px Arial';
     paddockCtx.textAlign = 'left';
@@ -116,7 +117,22 @@ function drawPaddockAndYield(paddockCtx, paddock, cellWidth, cellHeight, gridWid
         }
     }
 
+    // Clear and Draw Timer on UI
+    let timerXPosition = gridWidth + 100;  // Adjust as per your UI layout
+    let timerYPosition = 20;  // Adjust as per your UI layout
+    let timerWidth = 200;  // Width of the area to clear, adjust as needed
+    let timerHeight = 30;  // Height of the area to clear, adjust as needed
+
+    // Clear the timer area
+    paddockCtx.clearRect(timerXPosition, timerYPosition - timerHeight / 2, timerWidth, timerHeight);
+
+    let currentTime = timer.getTimeFormatted(); // Assuming getTimeFormatted() returns time in a formatted string
+    paddockCtx.fillStyle = 'black';
+    paddockCtx.fillText(`Timer: ${currentTime}`, timerXPosition, timerYPosition);
+
+
     drawTramlines(paddockCtx, paddock, cellWidth, cellHeight)
+
 
 }
 
@@ -201,7 +217,7 @@ function startApplication() {
     const paddockHeight = uiHeight - 2 * paddockPaddingBottom;
 
     // Create a Paddock instance
-    let paddock = new Paddock(40, 60, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
+    let paddock = new Paddock(40, 55, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
 
     // Determine the maximum possible square cell sizeca
     let cellSize = Math.min(paddockWidth / paddock.paddockLength, paddockHeight / paddock.paddockWidth);
@@ -242,9 +258,10 @@ function startApplication() {
         new Harvester(0, 2, harvesterImages, paddock, 0, (harvester) => findNearbyChaserBin(harvester, vehicles)),
         new Harvester(0, 4, harvesterImages, paddock, 1,(harvester) => findNearbyChaserBin(harvester, vehicles)),
         new Harvester(0, 6, harvesterImages, paddock, 2,(harvester) => findNearbyChaserBin(harvester, vehicles)),
-
         // Add more vehicles as needed
     ];
+
+    let timer = new Timer();
 
     
     let activeVehicleIndex = 0; // Index to track the active vehicle
@@ -289,8 +306,10 @@ function startApplication() {
         if (event.key === 'p' || event.key ==='P'){
             isGamePaused = !isGamePaused; 
             if (isGamePaused){
+                timer.pause();
                 console.log('Game Paused');
             }else{ 
+                timer.start();
                 console.log('Game unpaused');
             }
         }
@@ -333,7 +352,8 @@ function startApplication() {
         }
 
         if (event.key === 'u' || event.key ==='U'){
-            
+            timer.start(); // Start the timer
+            timer.reset(); // Reset the timer
             islandPattern(vehicles, paddock)
             let harvesters = vehicles.filter(v => v instanceof Harvester);
             harvesters.forEach(harvester => {
@@ -343,6 +363,8 @@ function startApplication() {
         }
 
         if (event.key === 'i' || event.key ==='I'){
+            timer.start(); // Start the timer
+            timer.reset(); // Reset the timer
             efficientPattern(vehicles, paddock)
             let harvesters = vehicles.filter(v => v instanceof Harvester);
             harvesters.forEach(harvester => {
@@ -367,7 +389,7 @@ function startApplication() {
 
     function gameLoop() {
         if (!isGamePaused) {
-            drawPaddockAndYield(paddockCtx, paddock, cellSize, cellSize, gridWidth, colors, vehicles);
+            drawPaddockAndYield(paddockCtx, paddock, cellSize, cellSize, gridWidth, colors, vehicles, timer);
             for (const vehicle of vehicles) {
                 vehicle.move();
                 vehicle.draw(paddockCtx, cellSize, cellSize);
