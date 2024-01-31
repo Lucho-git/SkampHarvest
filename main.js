@@ -217,7 +217,7 @@ function startApplication() {
     const paddockHeight = uiHeight - 2 * paddockPaddingBottom;
 
     // Create a Paddock instance
-    let paddock = new Paddock(40, 55, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
+    let paddock = new Paddock(120, 78, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
 
     // Determine the maximum possible square cell sizeca
     let cellSize = Math.min(paddockWidth / paddock.paddockLength, paddockHeight / paddock.paddockWidth);
@@ -257,7 +257,6 @@ function startApplication() {
         new ChaserBin(0, 0, chaserBinImages, paddock, 9),
         new Harvester(0, 2, harvesterImages, paddock, 0, (harvester) => findNearbyChaserBin(harvester, vehicles)),
         new Harvester(0, 4, harvesterImages, paddock, 1,(harvester) => findNearbyChaserBin(harvester, vehicles)),
-        new Harvester(0, 6, harvesterImages, paddock, 2,(harvester) => findNearbyChaserBin(harvester, vehicles)),
         // Add more vehicles as needed
     ];
 
