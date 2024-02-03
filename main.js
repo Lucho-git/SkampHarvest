@@ -8,20 +8,20 @@ import { startAIHarvesting, startAIPattern, islandPattern, efficientPattern } fr
 
 
 
-function drawGridlines(gridCtx, paddockCtx, paddock, cellWidth, cellHeight, paddockWidth, paddockHeight, uiWidth, uiHeight) {
+function drawGridlines(gridCtx, paddockCtx, paddock, cellWidth, cellHeight, paddockLength, paddockHeight, uiWidth, uiHeight) {
     // Define colors for different areas
     const paddockBorderColor = 'rgba(34, 139, 34, 0.3)'; // Green with transparency
     const uiBorderColor = 'rgba(0, 0, 255, 0.3)'; // Blue with transparency
     const gridColor = 'rgba(0, 0, 0, 0.1)'; // Light black with transparency
-    
+    console.log('drawing gridlines')
     
     // Draw paddock border with fill
     paddockCtx.fillStyle = paddockBorderColor;
-    paddockCtx.fillRect(0, 0, paddockWidth, paddockHeight);
+    paddockCtx.fillRect(0, 0, paddockLength, paddockHeight);
 
     // Draw UI border with fill
     paddockCtx.fillStyle = uiBorderColor;
-    paddockCtx.fillRect(paddockWidth, 0, uiWidth - paddockWidth, uiHeight);
+    paddockCtx.fillRect(paddockLength, 0, uiWidth - paddockLength, uiHeight);
 
 
     // Draw grid lines
@@ -213,14 +213,14 @@ function startApplication() {
     paddockCanvas.height = uiHeight;
 
     // Paddock dimensions
-    const paddockWidth = uiWidth - 2 * paddockPaddingRight;
+    const paddockLength = uiWidth - 2 * paddockPaddingRight;
     const paddockHeight = uiHeight - 2 * paddockPaddingBottom;
 
     // Create a Paddock instance
     let paddock = new Paddock(120, 78, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
 
     // Determine the maximum possible square cell sizeca
-    let cellSize = Math.min(paddockWidth / paddock.paddockLength, paddockHeight / paddock.paddockWidth);
+    let cellSize = Math.min(paddockLength / paddock.paddockLength, paddockHeight / paddock.paddockWidth);
 
     // Grid dimensions based on cell size
     const gridWidth = cellSize * paddock.paddockLength;
@@ -398,7 +398,7 @@ function startApplication() {
     }
     window.addEventListener('keydown', handleKeyPress);
     console.log(paddockCanvas.height, paddockCanvas.width)
-    drawGridlines(gridCtx, paddockCtx, paddock, cellSize, cellSize, paddockWidth, paddockHeight, uiWidth, uiHeight);
+    drawGridlines(gridCtx, paddockCtx, paddock, cellSize, cellSize, paddockLength, paddockHeight, uiWidth, uiHeight);
 
     gameLoop();
 
