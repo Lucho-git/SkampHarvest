@@ -56,7 +56,7 @@ function drawPaddockAndYield(paddockCtx, paddock, cellWidth, cellHeight, gridWid
             // Draw the paddock areas, crops, and status
             if (plot.needsRedraw) {
                 // Redraw logic for the cell
-                console.log('redrawing', plot.coordinates);
+                // console.log('redrawing', plot.coordinates);
                 paddockCtx.fillStyle = 'black'
                 paddockCtx.fillStyle = colors[plot.zone];
                 paddockCtx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
@@ -83,7 +83,6 @@ function drawPaddockAndYield(paddockCtx, paddock, cellWidth, cellHeight, gridWid
                             
                             let redraw = paddock.plots[vehicle.lastDestination.y][vehicle.lastDestination.x];
                             redraw.needsRedraw = true;
-                            console.log(redraw);
                         }
                         vehicle.lastDestination = null; // Reset lastDestination after processing
                     }
@@ -218,6 +217,7 @@ function startApplication() {
 
     // Create a Paddock instance
     let paddock = new Paddock(120, 78, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
+    console.log('length', paddock.paddockLength,'height', paddock.paddockHeight)
 
     // Determine the maximum possible square cell sizeca
     let cellSize = Math.min(paddockLength / paddock.paddockLength, paddockHeight / paddock.paddockHeight);
