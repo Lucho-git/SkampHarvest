@@ -74,7 +74,7 @@ function harvestTramline(harvester, tramline, paddock) {
 
     // Ensure the destination is within paddock bounds
     nextX = Math.max(0, Math.min(nextX, paddock.paddockLength - 1));
-    nextY = Math.max(0, Math.min(nextY, paddock.paddockWidth - 1));
+    nextY = Math.max(0, Math.min(nextY, paddock.paddockHeight - 1));
 
     console.log(`Harvester's current location: (${harvester.x}, ${harvester.y})`);
     console.log(`Chosen destination block: (${nextX}, ${nextY})`);
@@ -103,7 +103,7 @@ function findNearestTramline(harvester, paddock, allHarvesters) {
 
                 adjacentPoints.forEach(point => {
                     if (point.x >= 0 && point.x < paddock.paddockLength && 
-                        point.y >= 0 && point.y < paddock.paddockWidth && 
+                        point.y >= 0 && point.y < paddock.paddockHeight && 
                         !isPartOfAnyTramline(paddock, point.x, point.y)) {
                         let distance = Math.abs(harvester.x - point.x) + Math.abs(harvester.y - point.y);
                         if (distance < minDistance) {
@@ -243,7 +243,7 @@ function findNextTramline(harvester, paddock) {
 
         adjacentPoints.forEach(point => {
             if (point.x >= 0 && point.x < paddock.paddockLength && 
-                point.y >= 0 && point.y < paddock.paddockWidth && 
+                point.y >= 0 && point.y < paddock.paddockHeight && 
                 !isPartOfAnyTramline(paddock, point.x, point.y)) {
                 let distance = Math.abs(harvester.x - point.x) + Math.abs(harvester.y - point.y);
                 if (distance < minDistance) {

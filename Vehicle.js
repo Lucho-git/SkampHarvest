@@ -70,7 +70,7 @@ export class Vehicle {
             for (let dx = -1; dx <= 1; dx++) {
                 let plotX = this.x + dx;
                 let plotY = this.y + dy;
-                if (plotX >= 0 && plotX < paddock.paddockLength && plotY >= 0 && plotY < paddock.paddockWidth) {
+                if (plotX >= 0 && plotX < paddock.paddockLength && plotY >= 0 && plotY < paddock.paddockHeight) {
                     paddock.plots[plotY][plotX].needsRedraw = true;
                 }
             }

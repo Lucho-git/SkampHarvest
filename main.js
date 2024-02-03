@@ -26,7 +26,7 @@ function drawGridlines(gridCtx, paddockCtx, paddock, cellWidth, cellHeight, padd
 
     // Draw grid lines
     gridCtx.strokeStyle = 'black';
-    for (let y = 0; y < paddock.paddockWidth; y++) {
+    for (let y = 0; y < paddock.paddockHeight; y++) {
         for (let x = 0; x < paddock.paddockLength; x++) {
             gridCtx.strokeRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
         }
@@ -34,7 +34,7 @@ function drawGridlines(gridCtx, paddockCtx, paddock, cellWidth, cellHeight, padd
 
     // // Draw paddock border
     // paddockCtx.strokeStyle = 'green';
-    // paddockCtx.strokeRect(0, 0, paddockWidth, paddockHeight);
+    // paddockCtx.strokeRect(0, 0, paddockHeight, paddockHeight);
 
     // // Draw UI border
     // paddockCtx.strokeStyle = 'blue';
@@ -49,14 +49,14 @@ function drawPaddockAndYield(paddockCtx, paddock, cellWidth, cellHeight, gridWid
     paddockCtx.fillStyle = 'black';  // Color for text
 
 
-    for (let y = 0; y < paddock.paddockWidth; y++) {
+    for (let y = 0; y < paddock.paddockHeight; y++) {
         for (let x = 0; x < paddock.paddockLength; x++) {
             let plot = paddock.plots[y][x];
     
             // Draw the paddock areas, crops, and status
             if (plot.needsRedraw) {
                 // Redraw logic for the cell
-                //console.log('redrawing', plot.coordinates);
+                console.log('redrawing', plot.coordinates);
                 paddockCtx.fillStyle = 'black'
                 paddockCtx.fillStyle = colors[plot.zone];
                 paddockCtx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
@@ -79,7 +79,7 @@ function drawPaddockAndYield(paddockCtx, paddock, cellWidth, cellHeight, gridWid
                     if (vehicle.lastDestination) {
                         // Check if lastDestination indices are within the bounds of paddock.plots
                         if (vehicle.lastDestination.x >= 0 && vehicle.lastDestination.x < paddock.paddockLength &&
-                            vehicle.lastDestination.y >= 0 && vehicle.lastDestination.y < paddock.paddockWidth) {
+                            vehicle.lastDestination.y >= 0 && vehicle.lastDestination.y < paddock.paddockHeight) {
                             
                             let redraw = paddock.plots[vehicle.lastDestination.y][vehicle.lastDestination.x];
                             redraw.needsRedraw = true;
@@ -220,11 +220,11 @@ function startApplication() {
     let paddock = new Paddock(120, 78, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
 
     // Determine the maximum possible square cell sizeca
-    let cellSize = Math.min(paddockLength / paddock.paddockLength, paddockHeight / paddock.paddockWidth);
+    let cellSize = Math.min(paddockLength / paddock.paddockLength, paddockHeight / paddock.paddockHeight);
 
     // Grid dimensions based on cell size
     const gridWidth = cellSize * paddock.paddockLength;
-    const gridHeight = cellSize * paddock.paddockWidth;
+    const gridHeight = cellSize * paddock.paddockHeight;
 
     // Set grid canvas dimensions
     gridCanvas.width = gridWidth;
@@ -276,7 +276,7 @@ function startApplication() {
         const cellY = Math.floor(y / cellSize);
     
         // Check if the click is within the grid area
-        if (cellX < paddock.paddockLength && cellY < paddock.paddockWidth) {
+        if (cellX < paddock.paddockLength && cellY < paddock.paddockHeight) {
             vehicles[activeVehicleIndex].setDestination(cellX, cellY);
         }
     });
@@ -293,7 +293,7 @@ function startApplication() {
     function handleKeyPress(event) {
         console.log(event.code + 'Shift pressed!');
         if (event.key === 'r' || event.key ==='R') {
-            for (let i = 0; i < paddock.paddockWidth; i++) {
+            for (let i = 0; i < paddock.paddockHeight; i++) {
                 for (let z = 0; z < paddock.paddockLength; z++) {
                     let plot = paddock.plots[i][z];
                     plot.needsRedraw = true;

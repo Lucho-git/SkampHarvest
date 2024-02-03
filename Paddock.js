@@ -15,13 +15,13 @@ export class Plot {
 export class Paddock {
     constructor(length, width, cropType, maxYield, zoneYieldEfficiency, borderThickness) {
         this.paddockLength = length;
-        this.paddockWidth = width;
+        this.paddockHeight = width;
         this.cropType = cropType;
         this.maxYield = maxYield;
         this.zoneYieldEfficiency = zoneYieldEfficiency;
         this.borderThickness = borderThickness;
         this.plots = this.createFarmland();
-        this.needsYieldUpdate = new Array(this.paddockWidth).fill(true); // Array to track which rows need yield updates
+        this.needsYieldUpdate = new Array(this.paddockHeight).fill(true); // Array to track which rows need yield updates
         this.tramlines = []; // Array to store tramlines
         this.generateTramlines(); // Call this method to populate tramlines upon creation
         console.log(data)
@@ -29,7 +29,7 @@ export class Paddock {
 
     createFarmland() {
         let farmland = [];
-        for (let y = 0; y < this.paddockWidth; y++) {
+        for (let y = 0; y < this.paddockHeight; y++) {
             let row = [];
             for (let x = 0; x < this.paddockLength; x++) {
                 let zone = this.determineZone(x, y);
@@ -45,13 +45,13 @@ export class Paddock {
         // Check for non-farmable land border
         if (x < this.borderThickness || y < this.borderThickness ||
             x >= this.paddockLength - this.borderThickness || 
-            y >= this.paddockWidth - this.borderThickness) {
+            y >= this.paddockHeight - this.borderThickness) {
             return 0;  // Non-farmable land border
         } else {
             // Randomize the boundary of each zone slightly
             let boundaryRandomness = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
             let midX = Math.floor(this.paddockLength / 2) + boundaryRandomness;
-            let midY = Math.floor(this.paddockWidth / 2) + boundaryRandomness;
+            let midY = Math.floor(this.paddockHeight / 2) + boundaryRandomness;
     
             if (x < midX && y < midY) {
                 return 1;  // Top left quadrant
@@ -64,7 +64,7 @@ export class Paddock {
     }
 
     generateTramlines() {
-        for (let y = 0; y < this.paddockWidth; y++) {
+        for (let y = 0; y < this.paddockHeight; y++) {
             let tramline = [];
             for (let x = 0; x < this.paddockLength; x++) {
                 let plot = this.plots[y][x];
