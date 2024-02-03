@@ -1,3 +1,4 @@
+import data from './paddocks/red_tank.json' assert { type: 'json' };
 export class Plot {
     constructor(coordinates, yieldEfficiency, zone, farmed = false, needsRedraw = true, needsHighlight = false) {
         this.coordinates = coordinates;
@@ -23,6 +24,7 @@ export class Paddock {
         this.needsYieldUpdate = new Array(this.paddockWidth).fill(true); // Array to track which rows need yield updates
         this.tramlines = []; // Array to store tramlines
         this.generateTramlines(); // Call this method to populate tramlines upon creation
+        console.log(data)
     }
 
     createFarmland() {
