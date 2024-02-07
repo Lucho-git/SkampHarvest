@@ -1,4 +1,5 @@
-import data from './paddocks/red_tank.json' assert { type: 'json' };
+import data from './paddocks/mid_east.json' assert { type: 'json' };
+import inner_data from './paddocks/mid_east_inner.json' assert { type: 'json' };
 export class Plot {
     constructor(coordinates, yieldEfficiency, zone, farmed = false, needsRedraw = true, needsHighlight = false) {
         this.coordinates = coordinates;
@@ -20,11 +21,18 @@ export class Paddock {
         this.maxYield = maxYield;
         this.zoneYieldEfficiency = zoneYieldEfficiency;
         this.borderThickness = borderThickness;
-        this.plots = this.createFarmland();
+
+        let newInnerArray = this.centerSmallArrayInLarge(inner_data, data[0].length, data.length);
+        console.log('new array', newInnerArray)
+        console.log('data', data)
+
+        let array = this.mergeArrays(data, newInnerArray)
+        this.plots = this.importFarmland(array);
+        //this.plots = this.importFarmland();
         this.needsYieldUpdate = new Array(this.paddockHeight).fill(true); // Array to track which rows need yield updates
         this.tramlines = []; // Array to store tramlines
         this.generateTramlines(); // Call this method to populate tramlines upon creation
-        console.log(data)
+        // console.log(data)
     }
 
     createFarmland() {
@@ -39,6 +47,47 @@ export class Paddock {
             farmland.push(row);
         }
         return farmland;
+    }
+
+    importFarmland(data) {
+        let length = data[0].length;
+        let height = data.length;
+        this.paddockLength = length;
+        this.paddockHeight = height;
+        console.log(length, height)
+        let farmland = [];
+        for (let y = 0; y < this.paddockHeight; y++) {
+            let row = [];
+            for (let x = 0; x < this.paddockLength; x++) {
+                let zone = data[y][x];
+                let yieldEfficiency = this.zoneYieldEfficiency[zone];
+                row.push(new Plot({x, y}, yieldEfficiency, zone, false, true));
+            }
+            farmland.push(row);
+        }
+        return farmland;
+    }
+
+    mergeArrays(array1, array2) {
+        if (array1.length === 0 || array2.length === 0 || array1.length !== array2.length || array1[0].length !== array2[0].length) {
+            console.error("Arrays are empty or do not have equal size.");
+            return null;
+        }
+    
+        let mergedArray = Array.from({ length: array1.length }, (_, y) =>
+            Array.from({ length: array1[0].length }, (__, x) => {
+                // Apply the combination rules
+                if (array1[y][x] > 0 && array2[y][x] > 0) {
+                    return 2; // Both have values above 0
+                } else if (array1[y][x] > 0 || array2[y][x] > 0) {
+                    return 1; // One of them has a value above 0
+                } else {
+                    return 0; // Either or both are 0
+                }
+            })
+        );
+    
+        return mergedArray;
     }
 
     determineZone(x, y) {
@@ -82,6 +131,27 @@ export class Paddock {
             }
         }
     }
+
+    centerSmallArrayInLarge(smallArray, largeWidth, largeHeight) {
+        // Initialize the new larger array filled with 0s
+        let centeredArray = Array.from({ length: largeHeight }, () => 
+            Array.from({ length: largeWidth }, () => 0)
+        );
+    
+        // Calculate starting indices to center the smallArray within the larger dimensions
+        const startY = 2; // Move up by 2
+        const startX = 2; // Start 2 units to the right
+    
+        // Iterate over the smallArray to copy its values into the centered position of the new larger array
+        for (let y = 0; y < smallArray.length; y++) {
+            for (let x = 0; x < smallArray[0].length; x++) {
+                centeredArray[startY + y][startX + x] = smallArray[y][x];
+            }
+        }
+    
+        return centeredArray;
+    }
+    
 
     checkPlot(x, y){
         let plot = this.plots[y][x];
