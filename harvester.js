@@ -39,8 +39,11 @@ export class Harvester extends Vehicle {
 
     interact(nextX, nextY){
         super.interact(nextX, nextY)
+        console.log('checking...')
         let plotYield = this.paddock.checkPlot(nextX, nextY) 
+        console.log('got the yield', plotYield)
         if (plotYield){
+            console.log('sucess')
             if (plotYield && this.currentLoad + plotYield <= this.storageCapacity) {
                 //Harvester farms plot
                 this.currentLoad += this.paddock.farmPlot(nextX, nextY);;

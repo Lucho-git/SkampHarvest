@@ -22,12 +22,10 @@ export class Paddock {
         this.zoneYieldEfficiency = zoneYieldEfficiency;
         this.borderThickness = borderThickness;
 
-        let newInnerArray = this.centerSmallArrayInLarge(inner_data, data[0].length, data.length);
-        console.log('new array', newInnerArray)
-        console.log('data', data)
-
+        let newInnerArray = this.centerSmallArrayInLarge(inner_data, data);
         let array = this.mergeArrays(data, newInnerArray)
-        this.plots = this.importFarmland(array);
+        console.log('Merged', array)
+        this.plots = this.importFarmland(array); // Call this method to populate plots upon creation
         //this.plots = this.importFarmland();
         this.needsYieldUpdate = new Array(this.paddockHeight).fill(true); // Array to track which rows need yield updates
         this.tramlines = []; // Array to store tramlines
@@ -35,6 +33,7 @@ export class Paddock {
         // console.log(data)
     }
 
+    //Creates a rectangular shaped paddock based on the length and width of paddock deprecated
     createFarmland() {
         let farmland = [];
         for (let y = 0; y < this.paddockHeight; y++) {
@@ -48,6 +47,30 @@ export class Paddock {
         }
         return farmland;
     }
+
+    //Semi Randomly determines the zones of the paddock deprecated
+    determineZone(x, y) {
+        // Check for non-farmable land border
+        if (x < this.borderThickness || y < this.borderThickness ||
+            x >= this.paddockLength - this.borderThickness || 
+            y >= this.paddockHeight - this.borderThickness) {
+            return 0;  // Non-farmable land border
+        } else {
+            // Randomize the boundary of each zone slightly
+            let boundaryRandomness = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
+            let midX = Math.floor(this.paddockLength / 2) + boundaryRandomness;
+            let midY = Math.floor(this.paddockHeight / 2) + boundaryRandomness;
+    
+            if (x < midX && y < midY) {
+                return 4;  // Top left quadrant
+            } else if (x >= midX && y < midY) {
+                return 5;  // Top right quadrant
+            } else {
+                return 6;  // Bottom quadrants
+            }
+        }
+    }
+
 
     importFarmland(data) {
         let length = data[0].length;
@@ -68,6 +91,7 @@ export class Paddock {
         return farmland;
     }
 
+    // Merge two 2D arrays of equal size, and combines the values to properly represent a paddock with harvested borders
     mergeArrays(array1, array2) {
         if (array1.length === 0 || array2.length === 0 || array1.length !== array2.length || array1[0].length !== array2[0].length) {
             console.error("Arrays are empty or do not have equal size.");
@@ -78,7 +102,7 @@ export class Paddock {
             Array.from({ length: array1[0].length }, (__, x) => {
                 // Apply the combination rules
                 if (array1[y][x] > 0 && array2[y][x] > 0) {
-                    return 2; // Both have values above 0
+                    return 4; // Both have values above 0
                 } else if (array1[y][x] > 0 || array2[y][x] > 0) {
                     return 1; // One of them has a value above 0
                 } else {
@@ -90,34 +114,13 @@ export class Paddock {
         return mergedArray;
     }
 
-    determineZone(x, y) {
-        // Check for non-farmable land border
-        if (x < this.borderThickness || y < this.borderThickness ||
-            x >= this.paddockLength - this.borderThickness || 
-            y >= this.paddockHeight - this.borderThickness) {
-            return 0;  // Non-farmable land border
-        } else {
-            // Randomize the boundary of each zone slightly
-            let boundaryRandomness = Math.floor(Math.random() * 3) - 1; // -1, 0, or 1
-            let midX = Math.floor(this.paddockLength / 2) + boundaryRandomness;
-            let midY = Math.floor(this.paddockHeight / 2) + boundaryRandomness;
-    
-            if (x < midX && y < midY) {
-                return 1;  // Top left quadrant
-            } else if (x >= midX && y < midY) {
-                return 2;  // Top right quadrant
-            } else {
-                return 3;  // Bottom quadrants
-            }
-        }
-    }
-
+    //Breaks up horizontally-connected plots into tramlines
     generateTramlines() {
         for (let y = 0; y < this.paddockHeight; y++) {
             let tramline = [];
             for (let x = 0; x < this.paddockLength; x++) {
                 let plot = this.plots[y][x];
-                if (plot.zone !== 0) { // Check if the plot is farmable
+                if (plot.zone > 3) { // Check if the plot is farmable
                     tramline.push(plot);
                 } else {
                     if (tramline.length > 0) {
@@ -132,15 +135,23 @@ export class Paddock {
         }
     }
 
-    centerSmallArrayInLarge(smallArray, largeWidth, largeHeight) {
+    centerSmallArrayInLarge(smallArray, largeArray) {
         // Initialize the new larger array filled with 0s
+        let smallLength = smallArray[0].length
+        let smallHeight = smallArray.length;
+        let largeLength = largeArray[0].length;
+        let largeHeight = largeArray.length;
+
+        // Calculate starting indices to center the smallArray within the larger dimensions
+        let startY = (largeLength - smallLength) /2;
+        let startX = (largeHeight - smallHeight) /2;
+
         let centeredArray = Array.from({ length: largeHeight }, () => 
-            Array.from({ length: largeWidth }, () => 0)
+            Array.from({ length: largeLength }, () => 0)
         );
     
-        // Calculate starting indices to center the smallArray within the larger dimensions
-        const startY = 2; // Move up by 2
-        const startX = 2; // Start 2 units to the right
+
+
     
         // Iterate over the smallArray to copy its values into the centered position of the new larger array
         for (let y = 0; y < smallArray.length; y++) {
@@ -155,7 +166,12 @@ export class Paddock {
 
     checkPlot(x, y){
         let plot = this.plots[y][x];
-        if (plot.zone !== 0 && !plot.farmed) {
+        console.log('Checking if can farm plot', plot.zone, plot.farmed, plot.yieldValue)
+        console.log(plot.zone, plot.zone > 3, 'plot.farmed', !plot.farmed)
+        console.log(plot.zone > 3 && !plot.farmed)
+        console.log('hi')
+        if (plot.zone > 3 && !plot.farmed) {
+            console.log('made it')
             return plot.yieldValue;
         }
         else return
@@ -164,7 +180,9 @@ export class Paddock {
     farmPlot(x, y) {
         let plot = this.plots[y][x];
         this.needsYieldUpdate[y] = true; // Mark this row for yield update
-        if (plot.zone !== 0 && !plot.farmed) {
+        console.log('Checking if can farm plot', plot.zone, plot.farmed, plot.yieldValue)
+
+        if (plot.zone > 3 && !plot.farmed) {
             plot.farmed = true;
             plot.needsRedraw = true;
             return plot.yieldValue;
@@ -192,7 +210,7 @@ export class Paddock {
         let rowYield = 0;
         this.plots[row].forEach(plot => {
             // Consider only farmable plots that haven't been farmed yet
-            if (plot.zone !== 0 && !plot.farmed) {
+            if (plot.zone > 3 && !plot.farmed) {
                 rowYield += plot.yieldValue;
             }
         });

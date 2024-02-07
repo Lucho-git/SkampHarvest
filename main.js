@@ -62,10 +62,10 @@ function drawPaddockAndYield(paddockCtx, paddock, cellWidth, cellHeight, gridWid
                 paddockCtx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
 
                 // Check if the plot is farmable and not yet farmed, then draw the wheat image
-                if (plot.zone !== 0 && !plot.farmed) {
+                if (plot.zone > 3 && !plot.farmed) {
                     paddockCtx.drawImage(images.wheat, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
                 }
-                if (plot.zone !== 0 && plot.farmed) {
+                if (plot.zone > 3 && plot.farmed) {
                     paddockCtx.drawImage(images.dirt, x * cellWidth, y * cellHeight, cellWidth, cellHeight);
                 }
 
@@ -216,7 +216,7 @@ function startApplication() {
     const paddockHeight = uiHeight - 2 * paddockPaddingBottom;
 
     // Create a Paddock instance
-    let paddock = new Paddock(120, 78, "Wheat", 100, {1: 2.2, 2: 2.5, 3: 3}, 2);
+    let paddock = new Paddock(120, 78, "Wheat", 100, {4: 2.2, 5: 2.5, 6: 3}, 2);
     console.log('length', paddock.paddockLength,'height', paddock.paddockHeight)
 
     // Determine the maximum possible square cell sizeca
@@ -233,9 +233,12 @@ function startApplication() {
     // Colors for different zones
     const colors = {
         0: 'rgba(176, 196, 222, 1)',
-        1: 'rgba(255, 228, 181, 1)',
-        2: 'rgba(152, 251, 152, 1)',
+        1: 'rgba(193, 225, 193, 1)',
+        2: 'rgba(255, 228, 181, 1)',
         3: 'rgba(255, 222, 255, 1)',
+        4: 'rgba(152, 251, 152, 1)',
+        5: 'rgba(255, 222, 111, 1)',
+        6: 'rgba(111, 222, 255, 1)',
         'farmed': 'rgba(50, 205, 50, 1)'
     };
 
